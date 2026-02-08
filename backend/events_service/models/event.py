@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Integer, String, ForeignKey, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.base import Base
 
@@ -26,3 +26,4 @@ class Event(Base):
         onupdate=func.now()
     )
 
+    status: Mapped["Status"] = relationship("Status", back_populates="events")
