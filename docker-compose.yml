@@ -1,0 +1,39 @@
+services:
+  postgres-auth:
+    image: postgres:16
+    container_name: postgres_auth
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: auth_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_auth:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ./backend/auth_service
+      dockerfile: Dockerfile
+    container_name: auth_service
+    environment:
+      DB_HOST: postgres-auth
+      DB_PORT: 5432
+      DB_NAME: auth_db
+      DB_USER: admin
+      DB_PASSWORD: admin
+      PYTHONPATH: /main
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+    ports:
+      - "8001:8001"
+
+
+volumes:
+  pgdata_auth:
