@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from db.base import Base
 from models.event import Event
 from models.status import Status
+from models.attendee import Attendee
 
 load_dotenv()
 
@@ -33,7 +34,9 @@ def get_db_url() -> str:
 
     return url
 
+
 CORE_TABLES = {
+    "event_attendees",
     "events",
     "statuses",
     "alembic_version",
