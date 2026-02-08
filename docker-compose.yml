@@ -15,6 +15,22 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  postgres-event:
+    image: postgres:16
+    container_name: postgres_event
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: event_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_event:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d event_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   auth-service:
     build:
@@ -32,8 +48,25 @@ services:
       postgres-auth:
         condition: service_healthy
     ports:
+      - "8000:8000"
+  event-service:
+    build:
+      context: ./backend/events_service
+      dockerfile: Dockerfile
+    container_name: event_service
+    environment:
+      DB_HOST: postgres-event
+      DB_PORT: 5433
+      DB_NAME: event_db
+      DB_USER: admin
+      DB_PASSWORD: admin
+      PYTHONPATH: /main
+    depends_on:
+      postgres-event:
+        condition: service_healthy
+    ports:
       - "8001:8001"
-
 
 volumes:
   pgdata_auth:
+  pgdata_event:
