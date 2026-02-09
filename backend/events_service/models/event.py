@@ -15,6 +15,7 @@ class Event(Base):
     organizer_id: Mapped[int] = mapped_column(Integer)
     location: Mapped[str] = mapped_column(String)
     status_id: Mapped[int] = mapped_column(ForeignKey('statuses.id'))
+    image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -28,7 +29,8 @@ class Event(Base):
 
     status: Mapped["Status"] = relationship("Status", back_populates="events")
 
-    attendee: Mapped["Attendee"] = relationship(
+    attendees: Mapped[list["Attendee"]] = relationship(
         "Attendee",
         back_populates="events",
+        cascade="all, delete-orphan"
     )

@@ -1,4 +1,17 @@
 services:
+  gateway:
+    image: nginx:latest
+    container_name: api_gateway
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    networks:
+      - backend-network
+    depends_on:
+      - auth-service
+      - event-service
+
   postgres-auth:
     image: postgres:16
     container_name: postgres_auth
@@ -10,11 +23,14 @@ services:
       - "5432:5432"
     volumes:
       - pgdata_auth:/var/lib/postgresql/data
+    networks:
+      - backend-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d auth_db"]
       interval: 5s
       timeout: 5s
       retries: 5
+
   postgres-event:
     image: postgres:16
     container_name: postgres_event
@@ -26,11 +42,33 @@ services:
       - "5433:5432"
     volumes:
       - pgdata_event:/var/lib/postgresql/data
+    networks:
+      - backend-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U admin -d event_db" ]
+      test: ["CMD-SHELL", "pg_isready -U admin -d event_db"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: event_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    volumes:
+      - ./minio_data:/data
+    networks:
+      - backend-network
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   auth-service:
     build:
@@ -44,11 +82,14 @@ services:
       DB_USER: admin
       DB_PASSWORD: admin
       PYTHONPATH: /main
+    networks:
+      - backend-network
     depends_on:
       postgres-auth:
         condition: service_healthy
     ports:
       - "8000:8000"
+
   event-service:
     build:
       context: ./backend/events_service
@@ -60,12 +101,24 @@ services:
       DB_NAME: event_db
       DB_USER: admin
       DB_PASSWORD: admin
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_BUCKET: events-photos
+      MINIO_ACCESS_KEY: admin
+      MINIO_SECRET_KEY: password123
       PYTHONPATH: /main
+    networks:
+      - backend-network
     depends_on:
       postgres-event:
         condition: service_healthy
+      minio:
+        condition: service_healthy
     ports:
       - "8001:8001"
+
+networks:
+  backend-network:
+    driver: bridge
 
 volumes:
   pgdata_auth:

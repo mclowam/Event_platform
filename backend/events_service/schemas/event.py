@@ -18,6 +18,7 @@ class EventResponseSchema(BaseModel):
     organizer_id: int
     location: str
     status: StatusResponseSchema
+    image_url: Optional[str] = None
 
     start_time: datetime
     end_time: datetime
@@ -26,12 +27,13 @@ class EventResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 class EventSchema(BaseModel):
     title: str
     description: str
     location: str
     status_id: int
+    image_url: Optional[str] = None
+
     start_time: datetime
     end_time: datetime
 
@@ -41,5 +43,6 @@ class EventUpdateSchema(BaseModel):
     description: Optional[str] = None
     location: Optional[str] = None
     status_id: Optional[int] = None
+
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None

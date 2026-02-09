@@ -20,5 +20,5 @@ class Attendee(Base):
 
     events: Mapped["Event"] = relationship(
         "Event",
-        back_populates="attendee",
+        back_populates="attendees",
     )
