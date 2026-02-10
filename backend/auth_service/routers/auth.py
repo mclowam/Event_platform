@@ -12,6 +12,7 @@ from schemas.roles import UserPayload, UserRole
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
+
 def get_access_payload(user: User):
     role_val = user.role.value if hasattr(user.role, 'value') else str(user.role)
     return {"user_id": user.id, "email": user.email, "role": role_val}
@@ -44,6 +45,7 @@ async def register(user_data: UserCreateSchema, session: SessionDep):
         "status": "successfully registered"
     }
 
+
 @auth_router.post("/login", response_model=TokenSchema)
 async def login(data: UserLoginSchema, session: SessionDep):
     query = await session.execute(select(User).where(User.email == data.email))
@@ -56,6 +58,7 @@ async def login(data: UserLoginSchema, session: SessionDep):
     refresh = create_token({"sub": str(user.id)}, timedelta(days=REFRESH_EXPIRE_DAYS))
 
     return TokenSchema(access_token=access, refresh_token=refresh)
+
 
 @auth_router.post("/refresh", response_model=TokenSchema)
 async def refresh_token(data: RefreshTokenSchema, session: SessionDep):
@@ -77,6 +80,7 @@ async def refresh_token(data: RefreshTokenSchema, session: SessionDep):
     refresh = create_token({"sub": str(user.id)}, timedelta(days=REFRESH_EXPIRE_DAYS))
 
     return TokenSchema(access_token=access, refresh_token=refresh)
+
 
 @auth_router.get("/me", response_model=UserPayload)
 async def get_me(user: UserPayload = Depends(get_current_user)):

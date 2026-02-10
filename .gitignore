@@ -9,7 +9,7 @@ Desktop.ini
 
 __pycache__/
 *.pyc
-*.pyo
+*.pyogit add -f nginx.conf
 *.pyd
 .Python
 env/
@@ -24,7 +24,6 @@ pip-delete-this-directory.txt
 *.env
 
 *.log
-db.sqlite3
 media/
 staticfiles/
 static_root/

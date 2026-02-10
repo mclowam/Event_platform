@@ -28,7 +28,6 @@ def get_image_proxy_url(request: Request, event_id: int) -> str:
     return f"{base}/events/{event_id}/image"
 
 
-
 @event_router.get("", response_model=list[EventResponseSchema])
 async def all_events(request: Request, session: SessionDep):
     query = select(Event).options(selectinload(Event.status))
