@@ -1,18 +1,18 @@
 from datetime import datetime
-
 from pydantic import BaseModel, ConfigDict
-
 from schemas.event import EventResponseSchema
 
+class ApplicationCreateSchema(BaseModel):
+    event_id: int
 
-class AttendeeResponseSchema(BaseModel):
+class ApplicationResponseSchema(BaseModel):
     id: int
-    events: EventResponseSchema
     user_id: int
-    registered_at: datetime
+    event_id: int
+    applied_at: datetime
+    event: EventResponseSchema
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AttendeeSchema(BaseModel):
-    event_id: int
+class ApplicationStatusUpdateSchema(BaseModel):
+    new_status: str

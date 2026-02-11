@@ -1,5 +1,5 @@
 from .event import Event
 from .status import Status
-from .attendee import Attendee
+from .attendee import VolunteerApplication
 
-__all__ = ["Event", "Status", "Attendee"]
+__all__ = ["Event", "Status", "VolunteerApplication"]

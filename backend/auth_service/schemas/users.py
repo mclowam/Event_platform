@@ -1,4 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional
+from schemas.roles import UserRole
+
 
 class UserCreateSchema(BaseModel):
     username: str
@@ -6,6 +9,8 @@ class UserCreateSchema(BaseModel):
     password: str
     first_name: str
     last_name: str
+    phone: Optional[str]
+    skills: Optional[str]
 
 
 class UserLoginSchema(BaseModel):
@@ -16,9 +21,23 @@ class UserLoginSchema(BaseModel):
 class TokenSchema(BaseModel):
     access_token: str
     refresh_token: str
-
     token_type: str = 'bearer'
 
 
 class RefreshTokenSchema(BaseModel):
     refresh_token: str
+
+
+class UserReadSchema(BaseModel):
+    id: int
+    username: str
+    email: str
+    first_name: Optional[str]
+    last_name: Optional[str]
+    role: UserRole
+    phone: Optional[str]
+    skills: Optional[str]
+    is_active: bool
+
+    class Config:
+        from_attributes = True

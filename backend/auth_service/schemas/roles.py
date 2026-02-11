@@ -1,10 +1,9 @@
 from enum import Enum
-from typing import Optional
 from pydantic import BaseModel
 
 
 class UserRole(str, Enum):
-    USER = "user"
+    VOLUNTEER = "volunteer"
     ORGANIZER = "organizer"
     ADMIN = "admin"
 
@@ -12,5 +11,5 @@ class UserRole(str, Enum):
 class UserPayload(BaseModel):
     user_id: int
     email: str
-    role: str
+    role: UserRole
 

@@ -10,12 +10,16 @@ from models.user import User
 from schemas.users import UserCreateSchema, UserLoginSchema, TokenSchema, RefreshTokenSchema
 from schemas.roles import UserPayload, UserRole
 
-auth_router = APIRouter(prefix="/auth", tags=["auth"])
+auth_router = APIRouter(prefix="/auth")
 
 
 def get_access_payload(user: User):
     role_val = user.role.value if hasattr(user.role, 'value') else str(user.role)
-    return {"user_id": user.id, "email": user.email, "role": role_val}
+    return {
+        "user_id": user.id,
+        "email": user.email,
+        "role": role_val
+    }
 
 
 @auth_router.post("/register", status_code=201)
@@ -30,9 +34,11 @@ async def register(user_data: UserCreateSchema, session: SessionDep):
         password=hash_password(user_data.password),
         first_name=user_data.first_name,
         last_name=user_data.last_name,
+        phone=getattr(user_data, 'phone', None),
+        skills=getattr(user_data, 'skills', None),
         is_active=True,
         is_staff=False,
-        role=UserRole.USER
+        role=UserRole.VOLUNTEER
     )
 
     session.add(new_user)
@@ -42,7 +48,8 @@ async def register(user_data: UserCreateSchema, session: SessionDep):
     return {
         "id": new_user.id,
         "email": new_user.email,
-        "status": "successfully registered"
+        "role": new_user.role,
+        "status": "successfully registered as volunteer"
     }
 
 
@@ -51,10 +58,10 @@ async def login(data: UserLoginSchema, session: SessionDep):
     query = await session.execute(select(User).where(User.email == data.email))
     user = query.scalar_one_or_none()
 
-    if not user or not verify_password(data.password, user.password):
+    if not user or not verify_password(data.password, str(user.password)):
         raise HTTPException(401, "Invalid email or password")
 
-    access = create_token(get_access_payload(user), timedelta(minutes=ACCESS_EXPIRE_MIN))
+    access = create_token(get_access_payload(user), timedelta(days=ACCESS_EXPIRE_MIN))
     refresh = create_token({"sub": str(user.id)}, timedelta(days=REFRESH_EXPIRE_DAYS))
 
     return TokenSchema(access_token=access, refresh_token=refresh)

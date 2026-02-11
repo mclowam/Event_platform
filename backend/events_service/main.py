@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from routers.attendee import attendee_router
+from routers.attendee import application_router
 from routers.event import event_router
 
 app = FastAPI()
@@ -21,4 +21,4 @@ async def root():
 
 
 app.include_router(event_router)
-app.include_router(attendee_router)
+app.include_router(application_router)

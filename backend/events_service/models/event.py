@@ -14,13 +14,17 @@ class Event(Base):
     description: Mapped[str] = mapped_column(String)
     organizer_id: Mapped[int] = mapped_column(Integer)
     location: Mapped[str] = mapped_column(String)
+    max_volunteers: Mapped[int] = mapped_column(Integer, default=0)
     status_id: Mapped[int] = mapped_column(ForeignKey('statuses.id'))
     image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
-    start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -28,9 +32,8 @@ class Event(Base):
     )
 
     status: Mapped["Status"] = relationship("Status", back_populates="events")
-
-    attendees: Mapped[list["Attendee"]] = relationship(
-        "Attendee",
-        back_populates="events",
+    applications: Mapped[list["VolunteerApplication"]] = relationship(
+        "VolunteerApplication",
+        back_populates="event",
         cascade="all, delete-orphan"
     )

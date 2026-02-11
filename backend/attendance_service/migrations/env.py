@@ -9,9 +9,6 @@ from alembic import context
 from dotenv import load_dotenv
 
 from db.base import Base
-from models.event import Event
-from models.status import Status
-from models.attendee import VolunteerApplication
 
 load_dotenv()
 
@@ -28,18 +25,13 @@ def get_db_url() -> str:
     db_user = os.getenv("DB_USER")
     db_password = os.getenv("DB_PASSWORD")
     db_host = os.getenv("DB_HOST", "localhost")
-    db_port = os.getenv("DB_PORT", "5433")
+    db_port = os.getenv("DB_PORT", "5434")
 
     url = f"postgresql+asyncpg://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
     return url
 
-
 CORE_TABLES = {
-    "event_attendees",
-    "events",
-    "statuses",
-    "volunteer_applications",
     "alembic_version",
 }
 
