@@ -9,6 +9,7 @@ from alembic import context
 from dotenv import load_dotenv
 
 from db.base import Base
+from models.attendance import Attendance
 
 load_dotenv()
 
@@ -32,6 +33,7 @@ def get_db_url() -> str:
     return url
 
 CORE_TABLES = {
+    "attendance",
     "alembic_version",
 }
 

@@ -32,6 +32,7 @@ class Event(Base):
     )
 
     status: Mapped["Status"] = relationship("Status", back_populates="events")
+
     applications: Mapped[list["VolunteerApplication"]] = relationship(
         "VolunteerApplication",
         back_populates="event",
