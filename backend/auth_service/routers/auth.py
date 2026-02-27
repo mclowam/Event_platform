@@ -6,11 +6,12 @@ from sqlalchemy import select
 from jose import jwt, JWTError
 
 from core.config import ACCESS_EXPIRE_MIN, REFRESH_EXPIRE_DAYS, SECRET_KEY, ALGORITHM
-from core.auth import hash_password, verify_password, create_token, get_current_user
+from core.auth import hash_password, verify_password, get_current_user
 from db.session import SessionDep
 from models.user import User
 from schemas.users import UserCreateSchema, UserLoginSchema, TokenSchema, RefreshTokenSchema
 from schemas.roles import UserPayload, UserRole
+from services import UserRepository, AuthService, JWTTokenService, BcryptPasswordHasher
 
 auth_router = APIRouter(prefix="/auth")
 
@@ -23,36 +24,17 @@ def get_access_payload(user: User):
         "role": role_val
     }
 
+def get_auth_service(session: SessionDep) -> AuthService:
+    return AuthService(
+        user_repository=UserRepository(session),
+        password_hashed=BcryptPasswordHasher(),
+        token_service=JWTTokenService(),
+    )
+
 
 @auth_router.post("/register", status_code=201)
 async def register(user_data: UserCreateSchema, session: SessionDep):
-    query = await session.execute(select(User).where(User.email == user_data.email))
-    if query.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    new_user = User(
-        username=user_data.username,
-        email=user_data.email,
-        password=hash_password(user_data.password),
-        first_name=user_data.first_name,
-        last_name=user_data.last_name,
-        phone=getattr(user_data, 'phone', None),
-        skills=getattr(user_data, 'skills', None),
-        is_active=True,
-        is_staff=False,
-        role=UserRole.VOLUNTEER
-    )
-
-    session.add(new_user)
-    await session.commit()
-    await session.refresh(new_user)
-
-    return {
-        "id": new_user.id,
-        "email": new_user.email,
-        "role": new_user.role,
-        "status": "successfully registered as volunteer"
-    }
+        service =get_auth_service(session)
 
 
 @auth_router.post("/login", response_model=TokenSchema)
