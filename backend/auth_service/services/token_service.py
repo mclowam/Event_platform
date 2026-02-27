@@ -14,14 +14,17 @@ class JWTTokenService:
     ) -> None:
         self._secret_key = secret_key
         self._algorithm = algorithm
-        self._access_expire = timedelta(days=access_expire_min)
+        self._access_expire = timedelta(minutes=access_expire_min)
         self._refresh_expire = timedelta(days=refresh_expire_days)
 
-    def create_token(data: dict, expires_delta: timedelta):
+    def create_token(self, data: dict, expires_delta: timedelta) -> str:
         to_encode = data.copy()
         expire = datetime.now(timezone.utc) + expires_delta
         to_encode.update({"exp": expire})
-        return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        return jwt.encode(to_encode, self._secret_key, algorithm=self._algorithm)
+
+    def create_access_token(self, payload: dict) -> str:
+        return self.create_token(payload, self._access_expire)
 
     def create_refresh_token(self, user_id: int) -> str:
         payload = {"sub": str(user_id), "exp": datetime.now(timezone.utc) + self._refresh_expire}

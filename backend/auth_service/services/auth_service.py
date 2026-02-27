@@ -61,13 +61,18 @@ class AuthService:
 
 
     async def refresh(self, refresh_token: str) -> dict:
-        payload =self._tokens.refresh_token(refresh_token)
-        if not payload or not payload["sub"]:
+        payload = self._tokens.decode_refresh_token(refresh_token)
+
+        if not payload or not payload.get("sub"):
             raise HTTPException(status_code=401, detail="Invalid refresh token")
+
         user_id = int(payload["sub"])
-        user = await self._repo.get_by_id(user_id)
+        user = await self._repo.get_user_by_id(user_id)
+
         if not user or not user.is_active:
             raise HTTPException(401, "User not found or inactive")
+
         access = self._tokens.create_access_token(_access_payload(user))
         refresh = self._tokens.create_refresh_token(user.id)
+
         return {"access_token": access, "refresh_token": refresh, "token_type": "bearer"}
