@@ -47,18 +47,8 @@ async def get_me(user: UserPayload = Depends(get_current_user)):
 
 @auth_router.get("/user/email", response_model=UserPayload)
 async def get_user_by_email(session: SessionDep, email: str):
-    query = select(User).where(User.email == email)
-    result = await session.execute(query)
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(status_code=400, detail="Email not found")
-
-    return {
-        "user_id": user.id,
-        "email": user.email,
-        "role": user.role,
-    }
+    service = get_auth_service(session)
+    result = service.get_user_by_email_for_api(email)
 
 
 

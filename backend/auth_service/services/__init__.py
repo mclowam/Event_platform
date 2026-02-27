@@ -5,10 +5,10 @@ from .abstractions import (
 
 )
 
-from password_hashed import BcryptPasswordHasher
-from user_repository import UserRepository
-from token_service import JWTTokenService
-from auth_service import AuthService
+from .password_hashed import BcryptPasswordHasher
+from .user_repository import UserRepository
+from .token_service import JWTTokenService
+from .auth_service import AuthService
 
 
 __all__ = [

@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 from models.user import User
-from schemas.roles import UserRole
+from schemas.roles import UserRole, UserPayload
 from services import IPasswordHashed, IUserRepository, ITokenService
 
 
@@ -59,7 +59,6 @@ class AuthService:
 
         return {"access_token": access, "refresh_token": refresh, "token_type": "bearer"}
 
-
     async def refresh(self, refresh_token: str) -> dict:
         payload = self._tokens.decode_refresh_token(refresh_token)
 
@@ -76,3 +75,11 @@ class AuthService:
         refresh = self._tokens.create_refresh_token(user.id)
 
         return {"access_token": access, "refresh_token": refresh, "token_type": "bearer"}
+
+    async def get_user_by_email_for_api(self, email: str) -> UserPayload:
+        user = await self._repo.get_user_by_email(email)
+
+        if not user or not user.is_active:
+            raise HTTPException(status_code=401, detail="User not found or inactive")
+
+        return user
