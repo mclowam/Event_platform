@@ -39,24 +39,7 @@ async def all_events(
         page: int = Query(1, ge=1),
         size: int = Query(2, ge=1, le=100)
 ):
-    offset = (page - 1) * size
-
-    query = (
-        select(Event)
-        .options(selectinload(Event.status))
-        .offset(offset)
-        .limit(size)
-        .order_by(Event.id.desc())
-    )
-
-    result = await session.execute(query)
-    events = result.scalars().all()
-
-    for event in events:
-        if event.image_url:
-            event.image_url = get_image_proxy_url(request, event.id)
-
-    return events
+    ...
 
 @event_router.get("/{event_id}", response_model=EventResponseSchema)
 async def get_one_event(event_id: int, request: Request, session: SessionDep):

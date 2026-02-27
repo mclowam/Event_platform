@@ -4,7 +4,6 @@ from sqlalchemy.orm import selectinload
 from db.session import SessionDep
 from models import VolunteerApplication, Event
 from core.auth import get_current_user
-# Импортируем схемы (убедись, что ApplicationCreateSchema тут есть)
 from schemas.attendee import ApplicationResponseSchema, ApplicationCreateSchema
 from schemas.user import UserPayload
 
