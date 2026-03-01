@@ -13,13 +13,12 @@ class UserRepository:
 
         return result.scalar_one_or_none()
 
-    async def get_user_by_email(self, email: str) -> User:
+    async def get_by_email(self, email: str) -> User | None:
         result = await self._session.execute(select(User).where(User.email == email))
-
         return result.scalar_one_or_none()
 
     async def exists_by_email(self, email: str) -> bool:
-        user = await self.get_user_by_email(email)
+        user = await self.get_by_email(email)
         return user is not None
 
     async def add(self, user: User) -> User:

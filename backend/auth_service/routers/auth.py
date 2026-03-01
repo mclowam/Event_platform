@@ -48,7 +48,8 @@ async def get_me(user: UserPayload = Depends(get_current_user)):
 @auth_router.get("/user/email", response_model=UserPayload)
 async def get_user_by_email(session: SessionDep, email: str):
     service = get_auth_service(session)
-    result = service.get_user_by_email_for_api(email)
+    return await service.get_user_by_email_for_api(email)
+
 
 
 

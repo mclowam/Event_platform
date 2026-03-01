@@ -34,7 +34,7 @@ async def cancel_application(
         user: UserPayload = Depends(get_current_user)
 ):
     service = get_application_service(session)
-    return await service.cancel_application(event_id=event_id, user=user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @application_router.post("", response_model=ApplicationResponseSchema)

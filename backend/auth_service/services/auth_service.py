@@ -46,7 +46,7 @@ class AuthService:
         }
 
     async def login(self, email: str, password: str) -> dict:
-        user = await self._repo.get_user_by_email(email)
+        user = await self._repo.get_by_email(email)
 
         if not user or not self._hashed.verify(password, str(user.password)):
             raise HTTPException(
@@ -76,10 +76,8 @@ class AuthService:
 
         return {"access_token": access, "refresh_token": refresh, "token_type": "bearer"}
 
-    async def get_user_by_email_for_api(self, email: str) -> UserPayload:
-        user = await self._repo.get_user_by_email(email)
-
-        if not user or not user.is_active:
-            raise HTTPException(status_code=401, detail="User not found or inactive")
-
-        return user
+    async def get_user_by_email_for_api(self, email: str) -> dict:
+        user = await self._repo.get_by_email(email)
+        if not user:
+            raise HTTPException(status_code=400, detail="Email not found")
+        return {"user_id": user.id, "email": user.email, "role": user.role}
