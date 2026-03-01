@@ -1,22 +1,24 @@
-import React from "react";
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 
-function HomePage({ currentUser }) {
+function HomePage() {
+    const { user } = useAuth();
     return (
         <main className="page">
             <h1 className="page-title">Платформа событий</h1>
             <p className="page-subtitle">
-                Здесь будут мероприятия, расписания и управление событиями.
+                Мероприятия, расписания и управление событиями. Перейдите в <Link to="/events">События</Link>, чтобы увидеть список.
             </p>
 
-            {!currentUser ? (
+            {!user ? (
                 <p className="page-text">
-                    Чтобы продолжить, войдите в аккаунт через кнопку «Вход» вверху.
+                    Войдите или зарегистрируйтесь через меню вверху, чтобы подавать заявки и видеть свои часы.
                 </p>
             ) : (
                 <div className="card">
-                    <h2>Добро пожаловать, {currentUser?.name || currentUser?.email || "пользователь"}!</h2>
+                    <h2>Добро пожаловать, {user?.email}!</h2>
                     <p className="page-text">
-                        В ближайшее время здесь появится личный кабинет и ваши события.
+                        Ваша роль: {user?.role}. Перейдите в «События» или «Мои заявки».
                     </p>
                 </div>
             )}
