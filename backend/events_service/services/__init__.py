@@ -8,4 +8,8 @@ __all__ = [
     "IEventRepository",
     "EventRepository",
     "MinioImageStorage",
+    "IApplicationRepository",
+    "IMinioImageStorage",
+    "ApplicationRepository",
+
 ]

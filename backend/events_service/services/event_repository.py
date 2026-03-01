@@ -32,5 +32,7 @@ class EventRepository:
         self._session.add(event)
         await self._session.commit()
         await self._session.refresh(event)
+        query = select(Event).where(Event.id == event.id).options(selectinload(Event.status))
+        result = await self._session.execute(query)
+        return result.scalar_one()
 
-        return event

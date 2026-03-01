@@ -10,7 +10,7 @@ class ApplicationRepository:
     def __init__(self, session: SessionDep):
         self._session = session
 
-    async def my_applications(self, user_id: int) -> list:
+    async def my_applications(self, user_id: int):
         query = (
             select(VolunteerApplication)
             .where(VolunteerApplication.user_id == user_id)

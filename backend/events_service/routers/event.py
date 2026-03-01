@@ -20,6 +20,8 @@ from core.minio_client import (
     MINIO_BUCKET
 )
 from models import Event, Status
+from services import EventRepository, MinioImageStorage
+from services.event_service import EventService
 
 event_router = APIRouter(
     prefix="/events",
@@ -27,9 +29,11 @@ event_router = APIRouter(
 )
 
 
-def get_image_proxy_url(request: Request, event_id: int) -> str:
-    base = str(request.base_url).rstrip('/')
-    return f"{base}/events/{event_id}/image"
+def get_event_service(session: SessionDep) -> EventService:
+    return EventService(
+        event_repository=EventRepository(session),
+        image_storage=MinioImageStorage()
+    )
 
 
 @event_router.get("", response_model=list[EventResponseSchema])
@@ -39,42 +43,20 @@ async def all_events(
         page: int = Query(1, ge=1),
         size: int = Query(2, ge=1, le=100)
 ):
-    ...
+    service = get_event_service(session)
+    return await service.list_events(request=request, page=page, size=size)
+
 
 @event_router.get("/{event_id}", response_model=EventResponseSchema)
 async def get_one_event(event_id: int, request: Request, session: SessionDep):
-    query = select(Event).where(Event.id == event_id).options(selectinload(Event.status))
-    result = await session.execute(query)
-    event = result.scalar_one_or_none()
-
-    if not event:
-        raise HTTPException(status_code=404, detail="Событие не найдено")
-
-    if event.image_url:
-        event.image_url = get_image_proxy_url(request, event.id)
-    return event
+    service = get_event_service(session)
+    return await service.event_detail(request=request, event_id=event_id)
 
 
 @event_router.get("/{event_id}/image")
-async def get_event_image(event_id: int, session: SessionDep):
-    result = await session.execute(select(Event).where(Event.id == event_id))
-    event = result.scalar_one_or_none()
-
-    if not event or not event.image_url:
-        raise HTTPException(status_code=404, detail="Изображение не найдено")
-
-    async with session_minio.client("s3", endpoint_url=MINIO_ENDPOINT,
-                                    aws_access_key_id=MINIO_ACCESS_KEY,
-                                    aws_secret_access_key=MINIO_SECRET_KEY) as s3:
-        try:
-            response = await s3.get_object(Bucket=MINIO_BUCKET, Key=event.image_url)
-            data = await response['Body'].read()
-            return StreamingResponse(
-                io.BytesIO(data),
-                media_type=response.get('ContentType', 'image/jpeg')
-            )
-        except Exception:
-            raise HTTPException(status_code=404, detail="Ошибка при чтении файла из хранилища")
+async def get_event_image(session: SessionDep, event_id: int):
+    service = get_event_service(session)
+    return await service.get_event_image(event_id=event_id)
 
 
 @event_router.post("", response_model=EventResponseSchema)
@@ -91,40 +73,16 @@ async def create_event(
         file: UploadFile = File(...),
         user: UserPayload = Depends(is_organizer_or_admin)
 ):
-    filename = None
-    if file:
-        filename = f"{uuid.uuid4()}_{file.filename}"
-        async with session_minio.client("s3", endpoint_url=MINIO_ENDPOINT,
-                                        aws_access_key_id=MINIO_ACCESS_KEY,
-                                        aws_secret_access_key=MINIO_SECRET_KEY) as s3:
-            await s3.upload_fileobj(file.file, MINIO_BUCKET, filename)
-
-    new_event = Event(
+    service = get_event_service(session)
+    return await service.create_event(
+        request=request,
+        user=user,
         title=title,
         description=description,
         location=location,
-        organizer_id=user.user_id,
-        max_volunteers=max_volunteers,
         status_id=status_id,
+        max_volunteers=max_volunteers,
         start_time=start_time,
         end_time=end_time,
-        image_url=filename
+        file=file
     )
-
-    session.add(new_event)
-    await session.commit()
-
-    await session.refresh(new_event)
-
-    query = (
-        select(Event)
-        .where(Event.id == new_event.id)
-        .options(selectinload(Event.status))
-    )
-    result = await session.execute(query)
-    event_obj = result.scalar_one()
-
-    if event_obj.image_url:
-        event_obj.image_url = get_image_proxy_url(request, event_obj.id)
-
-    return event_obj
