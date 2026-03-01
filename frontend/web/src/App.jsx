@@ -1,66 +1,37 @@
-import Navbar from "./components/navbar.jsx";
-import { useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import { apiRequest, loadTokensFromStorage, setTokens } from "./services/apiService.js";
-import Login from "./components/auth/login.jsx";
-import Register from "./components/auth/register.jsx";
-import HomePage from "./pages/homePage.jsx";
-import './App.css'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext.jsx';
+import Layout from './components/Layout.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import Login from './components/auth/Login.jsx';
+import Register from './components/auth/Register.jsx';
+import EventsPage from './pages/EventsPage.jsx';
+import EventDetailPage from './pages/EventDetailPage.jsx';
+import MyApplicationsPage from './pages/MyApplicationsPage.jsx';
+import CreateEventPage from './pages/CreateEventPage.jsx';
+import OrganizerAttendancePage from './pages/OrganizerAttendancePage.jsx';
+import VolunteerHoursPage from './pages/VolunteerHoursPage.jsx';
+import { ROLES } from './config/index.js';
+import './App.css';
 
 function App() {
-    const [currentUser, setCurrentUser] = useState(null);
-
-    useEffect(() => {
-        const tokens = loadTokensFromStorage();
-        if (tokens) {
-            apiRequest("auth/me/")
-                .then((user) => setCurrentUser(user))
-                .catch(() => {
-                    setTokens(null);
-                    setCurrentUser(null);
-                });
-        }
-    }, []);
-
-    const logout = () => {
-        setTokens(null);
-        setCurrentUser(null);
-    };
-
-    return (
-        <>
-            <Navbar currentUser={currentUser} logout={logout} />
-
-            <Routes>
-                <Route
-                    path="/"
-                    element={<HomePage currentUser={currentUser} />}
-                />
-
-                <Route
-                    path="/login"
-                    element={
-                        !currentUser ? (
-                            <Login onLogin={setCurrentUser} />
-                        ) : (
-                            <Navigate to="/" />
-                        )
-                    }
-                />
-
-                <Route
-                    path="/register"
-                    element={
-                        !currentUser ? (
-                            <Register />
-                        ) : (
-                            <Navigate to="/" />
-                        )
-                    }
-                />
-            </Routes>
-        </>
-    );
+  return (
+    <AuthProvider>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Navigate to="/events" replace />} />
+          <Route path="events" element={<EventsPage />} />
+          <Route path="events/:id" element={<EventDetailPage />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="applications" element={<ProtectedRoute><MyApplicationsPage /></ProtectedRoute>} />
+          <Route path="hours" element={<ProtectedRoute><VolunteerHoursPage /></ProtectedRoute>} />
+          <Route path="events/create" element={<ProtectedRoute roleRequired={ROLES.organizer}><CreateEventPage /></ProtectedRoute>} />
+          <Route path="organizer/attendance" element={<ProtectedRoute roleRequired={ROLES.organizer}><OrganizerAttendancePage /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/events" replace />} />
+        </Route>
+      </Routes>
+    </AuthProvider>
+  );
 }
 
 export default App;
