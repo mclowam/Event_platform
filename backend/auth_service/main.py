@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+
+from routers.admin import admin_router
 from routers.auth import auth_router
 
 app = FastAPI()
@@ -19,3 +21,4 @@ async def root():
 
 
 app.include_router(auth_router)
+app.include_router(admin_router)

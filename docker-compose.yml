@@ -127,6 +127,8 @@ services:
         condition: service_healthy
     expose:
       - "8000"
+    ports:
+      - "8000:8000"
 
   event-service:
     build:
