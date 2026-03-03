@@ -1,0 +1,4 @@
+from app.repositories.user_repository import UserRepository
+from app.repositories.admin_repository import AdminRepository
+
+__all__ = ["UserRepository", "AdminRepository"]

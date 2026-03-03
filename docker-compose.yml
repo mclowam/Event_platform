@@ -119,14 +119,11 @@ services:
       DB_NAME: auth_db
       DB_USER: admin
       DB_PASSWORD: admin
-      PYTHONPATH: /main
     networks:
       - backend-network
     depends_on:
       postgres-auth:
         condition: service_healthy
-    expose:
-      - "8000"
     ports:
       - "8000:8000"
 
@@ -145,7 +142,6 @@ services:
       MINIO_BUCKET: events-photos
       MINIO_ACCESS_KEY: admin
       MINIO_SECRET_KEY: password123
-      PYTHONPATH: /main
     networks:
       - backend-network
     depends_on:
@@ -167,7 +163,6 @@ services:
       DB_NAME: attendance_db
       DB_USER: admin
       DB_PASSWORD: admin
-      PYTHONPATH: /main
     networks:
       - backend-network
     depends_on:

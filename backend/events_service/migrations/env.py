@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from dotenv import load_dotenv
 
-from db.base import Base
-from models.event import Event
-from models.status import Status
-from models.attendee import VolunteerApplication
+from app.db.base import Base
+from app.models.event import Event
+from app.models.status import Status
+from app.models.attendee import VolunteerApplication
 
 load_dotenv()
 

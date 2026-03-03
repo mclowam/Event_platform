@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from dotenv import load_dotenv
 
-from db.base import Base
-from models.attendance import Attendance
+from app.db.base import Base
+from app.models.attendance import Attendance
 
 load_dotenv()
 
